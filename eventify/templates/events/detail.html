@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block content %}<div class="container"><div class="row g-4"><div class="col-lg-8">
+{% if event.image %}<img src="{{ event.image.url }}" class="img-fluid rounded-4 mb-3" alt="">{% endif %}
+<span class="badge bg-brand-soft">{{ event.category }}</span> <span class="badge bg-secondary">{{ event.get_status_display }}</span>
+<h2 class="mt-2">{{ event.title }}</h2>{{ event.description|linebreaks }}</div>
+<div class="col-lg-4"><div class="card border-0 shadow-sm rounded-4 p-3">
+<p><i class="bi bi-calendar3"></i> {{ event.date }}, {{ event.start_time|time:"H:i" }}–{{ event.end_time|time:"H:i" }}</p>
+<p><i class="bi bi-geo-alt"></i> {{ event.venue }}</p><p><i class="bi bi-person"></i> Organizer: {{ event.organizer.get_full_name|default:event.organizer.username }}</p>
+<p><i class="bi bi-people"></i> {{ event.available_seats }} of {{ event.max_participants }} seats available</p><p><i class="bi bi-clock"></i> Register by {{ event.registration_deadline }}</p>
+{% if reg and reg.status != "cancelled" %}<div class="alert alert-info">Status: <b>{{ reg.get_status_display }}</b><br>ID: {{ reg.reg_id }}</div>
+ {% if reg.status == "pending" or reg.status == "confirmed" %}<form method="post" action="{% url 'cancel' reg.pk %}">{% csrf_token %}<button class="btn btn-outline-danger w-100">Cancel registration</button></form>{% endif %}
+{% elif user.is_authenticated %}<form method="post" action="{% url 'register' event.pk %}">{% csrf_token %}<button class="btn btn-brand w-100" {% if not event.is_open %}disabled{% endif %}>{% if event.is_open %}Register now{% else %}Registration closed{% endif %}</button></form>
+{% else %}<a class="btn btn-brand w-100" href="{% url 'login' %}?next={{ request.path }}">Login to register</a>{% endif %}
+{% if user.is_staff or user == event.organizer %}<hr><a class="btn btn-outline-secondary btn-sm" href="{% url 'event_edit' event.pk %}">Edit</a> <a class="btn btn-outline-danger btn-sm" href="{% url 'event_delete' event.pk %}">Delete</a>{% endif %}
+</div></div></div></div>{% endblock %}

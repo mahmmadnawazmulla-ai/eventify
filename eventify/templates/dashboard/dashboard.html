@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% load static %}{% block content %}<div class="container"><h2 class="mb-4">{{ mode|title }} Dashboard</h2>
+{% if mode == "participant" %}<p class="text-muted">Your latest registrations</p>
+<div class="list-group shadow-sm">{% for r in regs %}<a class="list-group-item" href="{% url 'event_detail' r.event.pk %}">{{ r.event.title }} <span class="badge status-{{ r.status }} float-end">{{ r.get_status_display }}</span></a>{% empty %}<div class="list-group-item text-muted">None yet.</div>{% endfor %}</div>
+{% else %}
+<div class="row g-3 mb-4">
+<div class="col-6 col-lg-3"><div class="stat card"><small>Events</small><h3>{{ total_events }}</h3></div></div>
+<div class="col-6 col-lg-3"><div class="stat card"><small>Upcoming</small><h3>{{ upcoming }}</h3></div></div>
+<div class="col-6 col-lg-3"><div class="stat card"><small>Registrations</small><h3>{{ total_regs }}</h3></div></div>
+{% if mode == "admin" %}<div class="col-6 col-lg-3"><div class="stat card"><small>Users / Organizers</small><h3>{{ total_users }} / {{ total_orgs }}</h3></div></div>{% endif %}</div>
+<div class="row g-3 mb-4"><div class="col-lg-4"><div class="card p-3"><canvas id="catChart"></canvas></div></div><div class="col-lg-4"><div class="card p-3"><canvas id="monthChart"></canvas></div></div><div class="col-lg-4"><div class="card p-3"><canvas id="popChart"></canvas></div></div></div>
+<div class="d-flex justify-content-between"><h4>Events</h4><a class="btn btn-brand btn-sm" href="{% url 'event_create' %}">+ New event</a></div>
+<div class="table-responsive card border-0 shadow-sm rounded-4 mt-2 mb-4"><table class="table align-middle mb-0"><tr><th>Title</th><th>Date</th><th>Seats left</th><th></th></tr>
+{% for e in events %}<tr><td><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a></td><td>{{ e.date }}</td><td>{{ e.available_seats }}/{{ e.max_participants }}</td><td><a class="btn btn-outline-secondary btn-sm" href="{% url 'event_edit' e.pk %}">Edit</a> <a class="btn btn-outline-danger btn-sm" href="{% url 'event_delete' e.pk %}">Delete</a> <a class="btn btn-outline-primary btn-sm" href="{% url 'manage_registrations' %}?event={{ e.pk }}">Participants</a></td></tr>{% endfor %}</table></div>
+<h4>Recent registrations</h4><ul class="list-group">{% for r in recent %}<li class="list-group-item">{{ r.user.username }} → {{ r.event.title }} <span class="badge status-{{ r.status }} float-end">{{ r.get_status_display }}</span></li>{% endfor %}</ul>
+{{ chart|json_script:"chart-data" }}{% endif %}</div>{% endblock %}
+{% block scripts %}{% if mode != "participant" %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script><script src="{% static 'js/dashboard.js' %}"></script>{% endif %}{% endblock %}
